@@ -1,7 +1,9 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 import json
+import uvicorn
 
 app = FastAPI()
 
@@ -189,4 +191,5 @@ def main():
     # calculate_totals_by_location(listings)
 
 if __name__ == "__main__":
-    main()
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
