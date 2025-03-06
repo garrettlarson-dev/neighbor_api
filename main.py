@@ -9,7 +9,6 @@ class Item(BaseModel):
     length: int
     quantity: int
 
-# Load listings from the JSON file
 with open('listings.json', 'r') as file:
     listings = json.load(file)
 
@@ -17,36 +16,35 @@ with open('listings.json', 'r') as file:
 async def handle_request(items: List[Item]):
     return process_items(items)
 
-# Function to process items and find suitable listings
 def process_items(items: List[Item]):
-    print("process_items function called")  # Debugging print
+    print("process_items function called")
     response = []
 
     # Calculate total required space for each item
     required_space = []
     total_car_sq_ft = 0
     for item in items:
-        car_sq_ft = item.length * 10  # Assuming each car is 10 feet wide
+        car_sq_ft = item.length * 10 
         required_space.extend([car_sq_ft] * item.quantity)
         total_car_sq_ft += car_sq_ft * item.quantity
 
-    print("Required space (sq ft):", required_space)  # Debugging print
+    print("Required space (sq ft):", required_space)
 
-    print("Starting to check if a single listing can cover the total required space")  # Debugging print
+    print("Starting to check if a single listing can cover the total required space")
     # Check if a single listing can cover the total required space
     for listing in listings:
         listing_sq_ft = listing['length'] * listing['width']
         if listing_sq_ft >= total_car_sq_ft:
-            print(f"Single listing {listing['id']} can cover the demand")  # Debugging print
+            print(f"Single listing {listing['id']} can cover the demand")
             # If a single listing can cover the demand, add it to the response
             response.append({
                 'location_id': listing['location_id'],
-                'listing_ids': [listing['id']],  # Use `listing_ids` for consistency
+                'listing_ids': [listing['id']],
                 'total_price_in_cents': listing['price_in_cents'],
                 'more_listings_available': False
             })
 
-    print("No single listing can cover the demand, proceeding with location-based logic")  # Debugging print
+    print("No single listing can cover the demand, proceeding with location-based logic")
     # If no single listing can cover the demand, proceed with existing logic
     # Find suitable listings for each location
     location_dict = {}
@@ -57,7 +55,7 @@ def process_items(items: List[Item]):
         
         location_dict[loc_id]['listings'].append(listing)
 
-    print("Evaluating each location independently")  # Debugging print
+    print("Evaluating each location independently")
     location_best_options = {}
 
     # Evaluate each location independently
@@ -75,7 +73,7 @@ def process_items(items: List[Item]):
                     best_single_listing = listing
 
         if best_single_listing:
-            print(f"Best single listing at location {loc_id} can cover the demand")  # Debugging print
+            print(f"Best single listing at location {loc_id} can cover the demand")
             # Add the best single listing to the location's best options
             location_best_options[loc_id] = {
                 'location_id': loc_id,
@@ -85,7 +83,7 @@ def process_items(items: List[Item]):
             }
             continue
 
-        print(f"Trying to fit all required spaces at location {loc_id}")  # Debugging print
+        print(f"Trying to fit all required spaces at location {loc_id}")
         used_listings = []
         total_price = 0
         remaining_space = required_space.copy()
@@ -122,7 +120,7 @@ def process_items(items: List[Item]):
     # Convert location_best_options to a list for sorting and response
     response = list(location_best_options.values())
 
-    print("Sorting the response by total price in cents")  # Debugging print
+    print("Sorting the response by total price in cents")
     # Sort the response by total price in cents, ascending
     response.sort(key=lambda x: (x['total_price_in_cents'], len(x['listing_ids'])))
 
@@ -132,7 +130,7 @@ def process_items(items: List[Item]):
         print(f"Listing IDs: {res['listing_ids']}")
         print(f"Total Price in Cents: {res['total_price_in_cents']}")
         print(f"More Listings Available: {res['more_listings_available']}")
-        print("\n")  # Two line breaks for separation
+        print("\n")
 
     # Print the total number of locations
     total_locations = len(location_dict)
@@ -154,24 +152,21 @@ def calculate_totals_by_location(listings):
         location_totals[loc_id]['total_length'] += listing['length']
         location_totals[loc_id]['total_width'] += listing['width']
 
-    # Print the totals for each location
     for loc_id, totals in location_totals.items():
         print(f"Location ID: {loc_id}")
         print(f"Total Length: {totals['total_length']}")
         print(f"Total Width: {totals['total_width']}")
-        print("\n")  # Two line breaks for separation
+        print("\n")  
 
-# Helper function to count locations that can accommodate a car of a specified length
 def count_locations_for_car_length(car_length: int, location_dict) -> int:
     count = 0
     for loc_id, data in location_dict.items():
         for listing in data['listings']:
             if listing['length'] >= car_length:
                 count += 1
-                break  # Move to the next location once a suitable listing is found
+                break 
     return count
 
-# Main function to run the test demo set
 def main():
     test_items = [
         {
@@ -187,10 +182,10 @@ def main():
             "quantity": 1
         }
     ]
-    print("Test items:", test_items)  # Debugging print
+    print("Test items:", test_items)  
     result = process_items([Item(**item) for item in test_items])
-    print("Result:", result)  # Debugging print
-    # Calculate and display totals by location
+    print("Result:", result)  
+
     # calculate_totals_by_location(listings)
 
 if __name__ == "__main__":
